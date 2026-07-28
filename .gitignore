@@ -1,2 +1,5 @@
 # ignore .env file
 .env
+
+# python cache
+__pycache__/
