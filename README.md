@@ -4,7 +4,7 @@
 
 ## 프로젝트 소개
 
-**mini-BAS**는 네트워크 스캐닝과 취약점 분석을 자동화하기 위한 **Breach and Attack Simulation(BAS)** 프레임워크입니다.
+**MCP를 통해 수집된 취약점 정보를 Claude Desktop에 전달하고, Claude Chat이 결과를 분석하여 위험도와 대응 방안을 제공합니다.
 
 대상 시스템의 포트를 스캔하여 실행 중인 서비스를 식별하고, Docker 기반 취약점 데이터베이스를 통해 관련 취약점을 조회합니다. 조회된 결과는 **MCP(Model Context Protocol)**를 통해 Claude Desktop으로 전달되며, Claude가 취약점의 위험도와 공격 가능성, 대응 방안을 분석하여 사용자에게 제공합니다.
 
