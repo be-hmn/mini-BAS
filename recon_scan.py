@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 DEFAULT_LAB_SCOPE = "192.168.137.0/24"
 DEFAULT_THREADS = 64
 MAX_THREADS = 256
+BANNER_SIZE = 256
+HTTP_PROBE_PORTS = {80, 443, 8000, 8080}
 
 
 def _lab_networks():
@@ -40,9 +42,27 @@ def _resolve_threads(threads):
     return max(1, min(threads, MAX_THREADS))
 
 
+def _grab_banner(sock: socket.socket, port: int) -> str:
+    """열린 소켓에서 서비스 배너를 읽는다. 얻지 못하면 빈 문자열."""
+    try:
+        data = sock.recv(BANNER_SIZE)
+    except OSError:
+        data = b""
+
+    if not data and port in HTTP_PROBE_PORTS:
+        try:
+            sock.sendall(b"HEAD / HTTP/1.0\r\n\r\n")
+            data = sock.recv(BANNER_SIZE)
+        except OSError:
+            data = b""
+
+    return data.decode("utf-8", errors="ignore").strip()
+
+
 def recon_scan(target_ip, start_port=1, end_port=1023, threads=None, timeout=0.5):
     """
     Multithreaded TCP connect scan - well-known ports (0-1023)
+    각 열린 포트에서 서비스 배너를 함께 수집한다 (얻지 못하면 빈 문자열).
     """
     validate_scope(target_ip)
     threads = _resolve_threads(threads)
@@ -55,12 +75,13 @@ def recon_scan(target_ip, start_port=1, end_port=1023, threads=None, timeout=0.5
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(timeout)
             result = s.connect_ex((target_ip, port))
-            s.close()
 
             if result == 0:
+                banner = _grab_banner(s, port)
                 with lock:
-                    open_ports.append(port)
-                logger.info("%s:%d OPEN", target_ip, port)
+                    open_ports.append({"port": port, "banner": banner})
+                logger.info("%s:%d OPEN (banner=%r)", target_ip, port, banner)
+            s.close()
         except OSError:
             pass
 
@@ -70,7 +91,7 @@ def recon_scan(target_ip, start_port=1, end_port=1023, threads=None, timeout=0.5
 
     return {
         "target": target_ip,
-        "open_ports": sorted(open_ports),
+        "open_ports": sorted(open_ports, key=lambda p: p["port"]),
         "scan_range": f"{start_port}-{end_port}",
         "status": "completed"
     }
@@ -88,4 +109,5 @@ if __name__ == "__main__":
 
     result = recon_scan(target, threads=num_threads)
     print(f"\n[*] Scan completed: {len(result['open_ports'])} open ports")
-    print(f"Open ports: {result['open_ports']}")
+    for p in result["open_ports"]:
+        print(f"  {p['port']}\t{p['banner'] or '(no banner)'}")
