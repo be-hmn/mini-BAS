@@ -30,10 +30,23 @@ def health():
     return jsonify({"status": "ok"}), 200
 
 
+def _version_matches(banner: str, affected_versions: list) -> bool:
+    """배너 문자열에 취약 버전 키워드가 등장하는지 대소문자 무시하고 확인."""
+    banner_lower = banner.lower()
+    return any(v.lower() in banner_lower for v in affected_versions)
+
+
 @app.route("/vulnerabilities/port/<int:port>", methods=["GET"])
 def get_port_vulnerabilities(port):
-    """포트별 취약점 조회"""
+    """포트+배너 기반 취약점 조회.
+
+    banner 쿼리 파라미터가 있으면 CVE의 affected_versions와 대조해
+    실제로 해당 버전인 CVE만 confidence="verified"로 남기고
+    나머지는 제외한다(단정 대신 근거 기반 판정).
+    banner가 없으면 기존처럼 포트 매핑만으로 confidence="unverified"를 부여한다.
+    """
     port_str = str(port)
+    banner = request.args.get("banner", "").strip()
 
     port_info = PORTS.get("services", {}).get(port_str)
     mapping = MAPPINGS.get("port_to_cve", {}).get(port_str)
@@ -41,32 +54,54 @@ def get_port_vulnerabilities(port):
     if not mapping:
         return jsonify({"error": "Port not found"}), 404
 
+    cve_details = []
+    matched_cves = []
+    attack_vectors = []
+
+    for cve in mapping.get("cves", []):
+        cve_info = CVES.get("cves", {}).get(cve)
+        if not cve_info:
+            continue
+
+        affected_versions = cve_info.get("affected_versions", [])
+        if banner:
+            if not _version_matches(banner, affected_versions):
+                continue
+            confidence = "verified"
+        else:
+            confidence = "unverified"
+
+        matched_cves.append(cve)
+        cve_details.append({
+            "cve_id": cve,
+            "title": cve_info.get("title"),
+            "severity": cve_info.get("severity"),
+            "cvss_score": cve_info.get("cvss_score"),
+            "exploit_type": cve_info.get("exploit_type"),
+            "affected_versions": affected_versions,
+            "confidence": confidence
+        })
+        if cve_info.get("exploit_type") not in attack_vectors:
+            attack_vectors.append(cve_info.get("exploit_type"))
+
+    # banner로 취약 버전이 아님이 확인되면(원래 CVE가 있었는데 하나도 매칭 안 됨) risk 하향
+    if banner and mapping.get("cves") and not matched_cves:
+        risk_level = "LOW"
+    else:
+        risk_level = mapping.get("risk_level")
+
     vuln_data = {
         "port": port,
         "service": mapping.get("service"),
         "protocol": port_info.get("protocol") if port_info else "Unknown",
-        "cves": mapping.get("cves", []),
-        "risk_level": mapping.get("risk_level"),
-        "exploitable": len(mapping.get("cves", [])) > 0,
-        "attack_vectors": []
+        "banner_checked": bool(banner),
+        "cves": matched_cves,
+        "cve_details": cve_details,
+        "risk_level": risk_level,
+        "exploitable": len(matched_cves) > 0,
+        "attack_vectors": attack_vectors
     }
 
-    # CVE 상세 정보
-    cve_details = []
-    for cve in vuln_data["cves"]:
-        cve_info = CVES.get("cves", {}).get(cve)
-        if cve_info:
-            cve_details.append({
-                "cve_id": cve,
-                "title": cve_info.get("title"),
-                "severity": cve_info.get("severity"),
-                "cvss_score": cve_info.get("cvss_score"),
-                "exploit_type": cve_info.get("exploit_type")
-            })
-            if cve_info.get("exploit_type") not in vuln_data["attack_vectors"]:
-                vuln_data["attack_vectors"].append(cve_info.get("exploit_type"))
-
-    vuln_data["cve_details"] = cve_details
     return jsonify(vuln_data), 200
 
 
