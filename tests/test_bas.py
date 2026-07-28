@@ -18,7 +18,12 @@ class _FakeResp:
 
 def _fake_recon_scan(target, *args, **kwargs):
     recon_scan.validate_scope(target)
-    return {"target": target, "open_ports": [80, 443], "scan_range": "1-1023", "status": "completed"}
+    return {
+        "target": target,
+        "open_ports": [{"port": 80, "banner": ""}, {"port": 443, "banner": ""}],
+        "scan_range": "1-1023",
+        "status": "completed"
+    }
 
 
 def test_no_stdout_pollution(monkeypatch):
