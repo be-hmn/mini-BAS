@@ -66,8 +66,8 @@ https://github.com/user-attachments/assets/8da66ccb-3f15-4aa5-935f-1870196843e1
 
 | 도구 | 입력 | 출력 | 용도 |
 | --- | --- | --- | --- |
-| `recon` | `target` (IPv4) | `{phase, target, result: {open_ports, scan_range, status}}` | 포트 스캔만 수행 |
-| `map_vulnerabilities` | `target` (IPv4), `open_ports`(선택) | `{phase, target, scan_result, analysis: {vulnerabilities, priority, recommended_path, total_vulnerable_ports, db_reachable, errors, partial}}` | 포트→CVE 매핑. `open_ports`가 주어지면 재스캔하지 않음 |
+| `recon` | `target` (IPv4) | `{phase, target, result: {open_ports: [{port, banner}], scan_range, status}}` | 포트 스캔 + 서비스 배너 수집 |
+| `map_vulnerabilities` | `target` (IPv4), `open_ports`(선택, `[{port, banner}]`) | `{phase, target, scan_result, analysis: {vulnerabilities, priority, recommended_path, total_vulnerable_ports, db_reachable, errors, partial}}` | 포트+배너→CVE 매핑. `open_ports`가 주어지면 재스캔하지 않음 |
 | `security_assessment` | `target` (IPv4) | `{target, timestamp, scan_result, vulnerability_analysis, summary}` | `recon` + `map_vulnerabilities`를 순차 실행하는 복합 도구 (스캔은 1회만 수행) |
 
 모든 도구는 격리된 랩 환경(`LAB_SCOPE`)의 소유 장비만을 대상으로 하며, 스코프를 벗어난 요청은 스캔 시작 전 `{"error": "...", "code": "OUT_OF_SCOPE"}`로 거부됩니다.
@@ -79,6 +79,18 @@ https://github.com/user-attachments/assets/8da66ccb-3f15-4aa5-935f-1870196843e1
 | `CRITICAL` / `HIGH` / `MEDIUM` / `LOW` | 매칭된 취약점 중 최고 위험도 |
 | `NONE` | DB 조회는 정상이나 매칭된 취약점 없음 |
 | `UNKNOWN` | 열린 포트에 대한 DB 조회가 전부 실패 — 판정 불가 |
+
+### 취약점 신뢰도 (confidence)
+
+포트 번호만으로 CVE를 단정하지 않기 위해, `recon`이 수집한 서비스 배너를 DB 조회 시 함께 전달합니다. 배너와 CVE의 `affected_versions`를 대조한 결과에 따라 `cve_details[].confidence`가 결정됩니다.
+
+| confidence | 조건 | 의미 |
+| --- | --- | --- |
+| `verified` | 배너가 있고 `affected_versions`와 일치 | 실제 취약 버전으로 확인됨 |
+| `unverified` | 배너를 얻지 못함 (예: SMB처럼 핸드셰이크 없이는 응답 안 하는 서비스) | 포트 기반 추정치, 버전 미확인 |
+| (제외) | 배너가 있는데 `affected_versions`와 불일치 | 해당 CVE는 결과에서 제외되고, 포트의 알려진 CVE가 모두 제외되면 `risk_level`이 `LOW`로 하향 조정됨 |
+
+SSH, FTP, HTTP처럼 연결 즉시 배너를 보내는 서비스는 `verified`/제외로 판정되지만, SMB(445)처럼 클라이언트 요청 없이는 배너를 안 주는 서비스는 여전히 `unverified`로 남습니다 — 이는 버그가 아니라 실제로 검증할 수 없다는 정직한 표시입니다.
 
 ---
 
@@ -171,10 +183,10 @@ python bas_mcp_server.py
 LAB_SCOPE 스코프 검증
         │
         ▼
-포트 스캔 (recon)
+포트 스캔 + 배너 수집 (recon)
         │
         ▼
-취약점 데이터 조회 (map_vulnerabilities)
+배너 기반 취약점 데이터 조회 (map_vulnerabilities)
         │
         ▼
 MCP를 통해 Claude Desktop으로 결과 전달
