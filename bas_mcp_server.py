@@ -32,8 +32,8 @@ async def list_tools() -> list[types.Tool]:
         types.Tool(
             name="recon",
             description=(
-                "격리된 랩 환경(LAB_SCOPE)의 소유 장비 대상 TCP 포트 스캔. "
-                "반환: {open_ports, scan_range, status}."
+                "격리된 랩 환경(LAB_SCOPE)의 소유 장비 대상 TCP 포트 스캔 + 서비스 배너 수집. "
+                "반환: {open_ports: [{port, banner}], scan_range, status}. banner는 얻지 못하면 빈 문자열."
             ),
             inputSchema={
                 "type": "object",
@@ -46,7 +46,8 @@ async def list_tools() -> list[types.Tool]:
         types.Tool(
             name="map_vulnerabilities",
             description=(
-                "격리된 랩 환경(LAB_SCOPE)의 소유 장비 대상 포트-CVE 매핑. "
+                "격리된 랩 환경(LAB_SCOPE)의 소유 장비 대상 포트-CVE 매핑. banner가 있으면 "
+                "실제 취약 버전인지 대조해 confidence를 verified/unverified로 구분한다. "
                 "open_ports를 주면 재스캔하지 않음. "
                 "반환: {vulnerabilities, priority, recommended_path, db_reachable, errors, partial}."
             ),
@@ -56,8 +57,15 @@ async def list_tools() -> list[types.Tool]:
                     "target": {"type": "string", "description": "대상 IP 주소", "pattern": IPV4_PATTERN},
                     "open_ports": {
                         "type": "array",
-                        "items": {"type": "integer"},
-                        "description": "이미 알려진 열린 포트 목록 (생략 시 자체 스캔)"
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "port": {"type": "integer"},
+                                "banner": {"type": "string"}
+                            },
+                            "required": ["port"]
+                        },
+                        "description": "이미 알려진 열린 포트+배너 목록 (recon 결과 그대로 전달, 생략 시 자체 스캔)"
                     }
                 },
                 "required": ["target"]
