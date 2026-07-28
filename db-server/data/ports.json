@@ -1,0 +1,54 @@
+{
+  "services": {
+    "135": {
+      "name": "RPC Endpoint Mapper",
+      "protocol": "TCP",
+      "description": "Windows RPC 서비스 포트"
+    },
+    "139": {
+      "name": "NetBIOS",
+      "protocol": "TCP",
+      "description": "NetBIOS Session Service"
+    },
+    "445": {
+      "name": "SMB",
+      "protocol": "TCP",
+      "description": "Server Message Block (Windows 파일 공유)"
+    },
+    "554": {
+      "name": "RTSP",
+      "protocol": "TCP",
+      "description": "Real Time Streaming Protocol"
+    },
+    "22": {
+      "name": "SSH",
+      "protocol": "TCP",
+      "description": "Secure Shell"
+    },
+    "3306": {
+      "name": "MySQL",
+      "protocol": "TCP",
+      "description": "MySQL Database"
+    },
+    "5432": {
+      "name": "PostgreSQL",
+      "protocol": "TCP",
+      "description": "PostgreSQL Database"
+    },
+    "3389": {
+      "name": "RDP",
+      "protocol": "TCP",
+      "description": "Remote Desktop Protocol"
+    },
+    "80": {
+      "name": "HTTP",
+      "protocol": "TCP",
+      "description": "Hyper Text Transfer Protocol"
+    },
+    "443": {
+      "name": "HTTPS",
+      "protocol": "TCP",
+      "description": "HTTP Secure"
+    }
+  }
+}

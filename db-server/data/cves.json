@@ -1,0 +1,58 @@
+{
+  "cves": {
+    "CVE-2017-0143": {
+      "title": "EternalBlue",
+      "description": "Windows SMB 프로토콜 원격 코드 실행 취약점",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "affected_versions": ["Windows 7", "Windows Server 2008", "Windows 8.1", "Windows Server 2012"],
+      "exploit_available": true,
+      "exploit_type": "Memory Corruption RCE"
+    },
+    "CVE-2020-0796": {
+      "title": "SMBGhost",
+      "description": "Windows SMB 3.1.1 프로토콜 취약점",
+      "severity": "CRITICAL",
+      "cvss_score": 8.1,
+      "affected_versions": ["Windows 10 1903-1909", "Windows Server 2019"],
+      "exploit_available": true,
+      "exploit_type": "RCE"
+    },
+    "CVE-2021-44228": {
+      "title": "Log4Shell",
+      "description": "Log4j 라이브러리 원격 코드 실행 취약점",
+      "severity": "CRITICAL",
+      "cvss_score": 10.0,
+      "affected_versions": ["Log4j 2.0-2.14.1"],
+      "exploit_available": true,
+      "exploit_type": "JNDI Injection RCE"
+    },
+    "CVE-2020-1350": {
+      "title": "SigRed",
+      "description": "Windows DNS 서버 취약점 (RPC 관련)",
+      "severity": "CRITICAL",
+      "cvss_score": 8.1,
+      "affected_versions": ["Windows Server 2003-2019"],
+      "exploit_available": true,
+      "exploit_type": "Buffer Overflow RCE"
+    },
+    "CVE-2019-0604": {
+      "title": "RCE via SharePoint",
+      "description": "SharePoint 원격 코드 실행",
+      "severity": "CRITICAL",
+      "cvss_score": 8.8,
+      "affected_versions": ["SharePoint 2010-2016"],
+      "exploit_available": true,
+      "exploit_type": "Deserialization RCE"
+    },
+    "CVE-2021-21985": {
+      "title": "vCenter RCE",
+      "description": "VMware vCenter 원격 코드 실행",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "affected_versions": ["vCenter 6.5-7.0"],
+      "exploit_available": true,
+      "exploit_type": "Plug-in RCE"
+    }
+  }
+}

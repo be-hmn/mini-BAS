@@ -1,0 +1,21 @@
+[Unit]
+Description=BAS MCP Server (Raspberry Pi)
+After=network.target
+
+[Service]
+Type=simple
+User=rpi
+WorkingDirectory=/home/rpi/bas-mcp
+Environment="PATH=/home/rpi/bas-mcp/venv/bin"
+EnvironmentFile=/home/rpi/bas-mcp/.env
+ExecStart=/home/rpi/bas-mcp/venv/bin/python3 /home/rpi/bas-mcp/bas_mcp_server.py
+Restart=always
+RestartSec=10
+
+# 로깅
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bas-mcp
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  vuln-db:
+    build: .
+    container_name: vuln-db-server
+    ports:
+      - "0.0.0.0:5000:5000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

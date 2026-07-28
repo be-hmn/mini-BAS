@@ -1,0 +1,54 @@
+{
+  "port_to_cve": {
+    "135": {
+      "service": "RPC Endpoint Mapper",
+      "cves": ["CVE-2020-1350"],
+      "risk_level": "MEDIUM"
+    },
+    "139": {
+      "service": "NetBIOS",
+      "cves": ["CVE-2017-0143"],
+      "risk_level": "HIGH"
+    },
+    "445": {
+      "service": "SMB",
+      "cves": ["CVE-2017-0143", "CVE-2020-0796"],
+      "risk_level": "CRITICAL"
+    },
+    "554": {
+      "service": "RTSP",
+      "cves": [],
+      "risk_level": "LOW"
+    },
+    "22": {
+      "service": "SSH",
+      "cves": [],
+      "risk_level": "LOW"
+    },
+    "3306": {
+      "service": "MySQL",
+      "cves": [],
+      "risk_level": "MEDIUM"
+    },
+    "5432": {
+      "service": "PostgreSQL",
+      "cves": [],
+      "risk_level": "MEDIUM"
+    },
+    "3389": {
+      "service": "RDP",
+      "cves": [],
+      "risk_level": "HIGH"
+    },
+    "80": {
+      "service": "HTTP",
+      "cves": [],
+      "risk_level": "MEDIUM"
+    },
+    "443": {
+      "service": "HTTPS",
+      "cves": [],
+      "risk_level": "LOW"
+    }
+  }
+}
