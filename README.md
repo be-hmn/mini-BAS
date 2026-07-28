@@ -22,6 +22,12 @@ Claude Desktop이 **MCP Client**로 동작하며 `bas_mcp_server.py`에 등록�
 
 ---
 
+## 시연 영상
+
+https://github.com/user-attachments/assets/8da66ccb-3f15-4aa5-935f-1870196843e1
+
+---
+
 ## 시스템 구조
 
 ```text
